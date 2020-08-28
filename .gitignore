@@ -1,0 +1,6 @@
+.idea/
+Include/
+Lib/
+Scripts/
+pyenv.cfg
+zonensidb.sqlite3

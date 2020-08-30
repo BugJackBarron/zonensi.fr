@@ -237,22 +237,6 @@ def get_category_id(course, category='none', subcategory='none'):
                 return id_category
 
 
-# def get_post(category_id=1) :
-#     """Get all post from a given category"""
-#     page = request.args.get('page', 1, type=int)
-#     if category_id != 1 :
-#         posts =  BlogPost.query.filter_by(id_true_category=category_id).\
-#                 order_by(BlogPost.date.desc()).paginate(
-#             page,config_app.POST_PER_PAGE,False)
-#     else :
-#         posts = BlogPost.query.order_by(BlogPost.date.desc()).paginate(
-#                 page, config_app.POST_PER_PAGE, False)
-#         print(posts)
-#     next_url = url_for('index', page=posts.next_num) if posts.has_next else None
-#     prev_url = url_for('index', page=posts.prev_num) if posts.has_prev else None
-#     print(posts.items,prev_url,next_url)
-#     return posts.items,prev_url,next_url
-
 def get_post(course='root', category='none', subcategory='none'):
     """Get all post from a given category"""
     page = request.args.get('page', 1, type=int)
@@ -326,7 +310,6 @@ def index():
 @app.route('/viewcategory/<course>/<category>/<subcategory>')
 def viewcategory(course, category='none', subcategory='none'):
     posts, prev_url, next_url = get_post(course, category, subcategory)
-    print(posts)
     return render_template('index.html',
                            cats=get_child(Categories.query.filter_by(real_name="Root").first().idg),
                            posts=posts,
@@ -349,7 +332,7 @@ def search_by_tag():
     if "+" in data:
         words = [w.strip() for w in re.split(',|;| |\+', data) if w != ""]
         words = set(words) - set("+")
-        print(words)
+
         posts = BlogPost.query.filter(and_(BlogPost.tags.like(f"%{w}%") for w in words)).order_by(
             BlogPost.date.desc()).paginate(
             page, config_app.POST_PER_PAGE, False)
@@ -358,7 +341,6 @@ def search_by_tag():
         posts = BlogPost.query.filter(or_(BlogPost.tags.like(f"%{w}%") for w in words)).order_by(
             BlogPost.date.desc()).paginate(
             page, config_app.POST_PER_PAGE, False)
-    print(posts.items)
     next_url = url_for('index', page=posts.next_num) if posts.has_next else None
     prev_url = url_for('index', page=posts.prev_num) if posts.has_prev else None
     return render_template('index.html',

@@ -21,6 +21,8 @@ from wtforms.validators import DataRequired, length, Optional, ValidationError
 from flask_wtf.file import FileAllowed
 
 import config_app
+# FIXME : changer l'architecture du projet conformément aux recommandations. Modifier confg_app, supprimer les données
+# inutiles
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = config_app.SECRET_KEY
@@ -158,7 +160,7 @@ class ContactForm(FlaskForm) :
 
 ###____________________MODIFICATIONS DES VUES DE L'ADMIN POUR Flask-Admin_______________________###
 
-
+# TODO : Modifier toutes    les références au login de l'admin
 class MyAdminIndexView(AdminIndexView):
 
     def is_accessible(self):
@@ -178,7 +180,7 @@ class MyModelView(ModelView):
 
     def is_accessible(self):
         if current_user.is_authenticated:
-            return current_user.login == 'admin'
+            return current_user.login == config_app.ADMIN_LOGIN
         else:
             return False
 
@@ -372,6 +374,7 @@ def contact():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # TODO : Modifier références login admin
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(login=form.login.data).first()

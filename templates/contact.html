@@ -1,0 +1,64 @@
+{% extends 'squelette.html' %}
+
+{% block head %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+    {{ super() }}
+{% endblock %}
+
+{% block contenu %}
+    <form action="" method="POST" enctype="multipart/form-data">
+        <div class="w3-container w3-flat-sun-flower-txt">
+            <h2>Contact</h2>
+        </div>
+
+        {% if form.errors %}
+            <ul class="errors">
+                {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+                    {% for error in field_errors %}
+                        <li class="w3-flat-amethyst">{{ form[field_name].label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <div class="w3-center">
+            {{ form.csrf_token }}
+            <p class="w3-flat-sun-flower-txt">
+                <h2 class="w3-flat-sun-flower-txt">{{ form.obj.label }}</h2>
+            </p><p>
+                {{ form.obj(size=32) }}
+            </p>
+
+        </div>
+        <p class="w3-flat-sun-flower-txt">
+            {{ form.content() }}
+        </p>
+        <p class="w3-flat-sun-flower-txt">Vous pouvez joindre un unique fichier à votre message ( .jpg, .png, .pdf, .odt, .py ,.7z ou .zip).</p>
+        <p class="w3-flat-sun-flower-txt">
+           <h2 class="w3-flat-sun-flower-txt"> {{ form.attachment.label }}</h2> {{ form.attachment }}
+        </p>
+        <p class="w3-flat-sun-flower-txt">
+            Vous pouvez compléter ce champ par une adresse mail si vous souhaitez une réponse de ma part.
+        </p>
+        <p class="w3-flat-sun-flower-txt">
+            <h2 class="w3-flat-sun-flower-txt">{{ form.sender.label }} </h2>{{ form.sender(size=50) }}
+        </p>
+        <p>
+            {{ form.submit }}
+        </p>
+
+
+    </form>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+
+    <!-- Start simple MDE -->
+    <script>
+        var simplemde = new SimpleMDE({
+            element: document.getElementById("content")
+        });
+    </script>
+{% endblock %}

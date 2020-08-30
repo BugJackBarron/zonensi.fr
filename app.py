@@ -8,7 +8,7 @@ from flask import Flask, render_template, url_for, request, redirect, flash, jso
 from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.fileadmin import FileAdmin
 from flask_admin.contrib.sqla import ModelView
-from flask_mail import Mail
+from flask_mail import Mail, Message
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
@@ -16,8 +16,9 @@ from flaskext.markdown import Markdown
 from sqlalchemy import ForeignKey, or_, and_
 from werkzeug import secure_filename
 from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAreaField, \
-    MultipleFileField, FieldList
+    MultipleFileField, FieldList, FileField
 from wtforms.validators import DataRequired, length, Optional, ValidationError
+from flask_wtf.file import FileAllowed
 
 import config_app
 
@@ -25,12 +26,20 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = config_app.SECRET_KEY
 app.config['DEBUG'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = config_app.BDD_FILE
+app.config['MAIL_SERVER'] = 'mail.gandi.net'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = config_app.MAIL_LOGIN
+app.config['MAIL_PASSWORD'] = config_app.MAIL_PWD
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 ###________CONFIGURATION DES MODULES_____________###
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 Markdown(app)
+mail = Mail(app)
 
 
 ###_________________CLASSES DES TABLES POUR SQLALCHEMY________________________________###
@@ -138,6 +147,13 @@ class CreateQuizz(FlaskForm):
     title = StringField('Titre', validators=[DataRequired()])
     itemList = FieldList(StringField())
     submit = SubmitField('Submit')
+
+class ContactForm(FlaskForm) :
+    obj = StringField('Objet', validators=[DataRequired()])
+    sender = StringField('Expéditeur' )
+    content = TextAreaField("Contenu")
+    attachment= FileField("Pièce jointe ", validators=[FileAllowed(['jpg', 'png','pdf','odt','py','7z','zip'],'Unsupported file')])
+    submit = SubmitField('Envoyer')
 
 
 ###____________________MODIFICATIONS DES VUES DE L'ADMIN POUR Flask-Admin_______________________###
@@ -355,7 +371,22 @@ def search_by_tag():
 
 @app.route('/contact',methods=['GET','POST'])
 def contact():
-    return 'toto'
+    form = ContactForm()
+    if form.validate_on_submit() :
+
+        msg = Message(form.obj.data, sender='admin@zonensi.fr', recipients=['admin@zonensi.fr'])
+        msg.body = form.content.data+"\n"+form.sender.data
+        if form.attachment.data :
+           msg.attach(secure_filename(form.attachment.data.filename),
+                      'application/octect-stream',
+                      form.attachment.data.read())
+        mail.send(msg)
+        return render_template('after_contact.html',
+                           cats=get_child(Categories.query.filter_by(real_name="Root").first().idg))
+    else :
+        return render_template('contact.html',
+                           cats=get_child(Categories.query.filter_by(real_name="Root").first().idg),
+                           form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])

@@ -4,3 +4,4 @@ Lib/
 Scripts/
 pyenv.cfg
 zonensidb.sqlite3
+config_app.py

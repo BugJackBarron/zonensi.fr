@@ -313,7 +313,6 @@ def format_markdown_links(form):
 @app.route('/')
 def index():
     posts, prev_url, next_url = get_post()
-    print(posts)
     return render_template('index.html',
                            cats=get_child(Categories.query.filter_by(real_name="Root").first().idg),
                            posts=posts,
@@ -411,7 +410,6 @@ def login():
 def add_post():
     # Formulaire d'ajout de Post
     form = PostForm()
-    print(form.errors)
     if form.validate_on_submit():
 
         post = BlogPost(title=form.title.data,
